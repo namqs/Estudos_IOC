@@ -1,21 +1,30 @@
-import pytesseract
 import cv2
+import pytesseract
+from PIL import Image
 
-# links uteis:
-# corrigir instalação windows: https://stackoverflow.com/questions/50951955/pytesseract-tesseractnotfound-error-tesseract-is-not-installed-or-its-not-i
-# instalar outra língua: https://github.com/tesseract-ocr/tessdata
-#caminho = r"C:\Users\Python\AppData\Local\Programs\Tesseract-OCR"
-#pytesseract.pytesseract.tesseract_cmd = caminho + r'\tesseract.exe'
-# pegar linguas: print(pytesseract.get_languages())
+#link util: https://github.com/bdstar/Handwritten-Text-Recognition-Tesseract-OCR
 
-imagem = cv2.imread("conta2.jpg")
+# Carregue a imagem em formato JPEG
+imagem_jpg = Image.open('conta2.jpg')
+
+# Salve a imagem em formato PNG
+imagem_jpg.save('imagem_convertida.png', 'PNG')
+
+# Abra a imagem em formato PNG
+imagem_png = cv2.imread('imagem_convertida.png')
+
 # Converta a imagem em escala de cinza
-gray = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY)
-# Aplicar limiarização de Otsu
-_, binary_image = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-# Reduza o ruído com filtro da mediana
+gray = cv2.cvtColor(imagem_png, cv2.COLOR_BGR2GRAY)
+
+# Aplique um filtro para melhorar o contraste
 clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-denoised_image = cv2.medianBlur(binary_image, 3)
+contrast = clahe.apply(gray)
+
+# Reduza o ruído com um filtro da mediana
+denoised_image = cv2.medianBlur(contrast, 3)
+
 # Extraia o texto da imagem pré-processada
-texto = pytesseract.image_to_string(denoised_image, lang="por")
-print(texto)
+texto_extraído = pytesseract.image_to_string(denoised_image, lang='por', config='--psm 6')
+
+# Imprima o texto extraído
+print(texto_extraído)
